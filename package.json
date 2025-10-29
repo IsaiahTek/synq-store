@@ -1,5 +1,5 @@
 {
-  "name": "data-sync",
+  "name": "synq-store",
   "version": "1.0.0",
   "description": "A minimal reactive state management plugin for JavaScript/TypeScript",
   "main": "dist/index.js",
@@ -14,10 +14,13 @@
     "url": "git+https://github.com/IsaiahTek/synq-store.git"
   },
   "keywords": [
-    "nextjs",
+    "sync",
+    "subscribe",
+    "subscription",
     "state",
-    "reactjs",
+    "react",
     "reactive",
+    "reactivity",
     "data",
     "store",
     "update",
@@ -29,7 +32,7 @@
     "url": "https://github.com/IsaiahTek/synq-store/issues"
   },
   "homepage": "https://github.com/IsaiahTek/synq-store#readme",
-  "peerDependencies": {
+  "devDependencies": {
     "typescript": "^5.9.3"
   }
 }

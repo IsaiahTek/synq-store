@@ -1,0 +1,35 @@
+{
+  "name": "data-sync",
+  "version": "1.0.0",
+  "description": "A minimal reactive state management plugin for JavaScript/TypeScript",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IsaiahTek/synq-store.git"
+  },
+  "keywords": [
+    "nextjs",
+    "state",
+    "reactjs",
+    "reactive",
+    "data",
+    "store",
+    "update",
+    "ui"
+  ],
+  "author": "Engr., Isaiah Pius E.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/IsaiahTek/synq-store/issues"
+  },
+  "homepage": "https://github.com/IsaiahTek/synq-store#readme",
+  "peerDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

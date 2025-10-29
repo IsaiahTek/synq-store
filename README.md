@@ -1,7 +1,7 @@
 # Synq-Store
 
 <p align="center">
-<img src="./images/synq_store_cover.svg" />
+<img src="https://raw.githubusercontent.com/IsaiahTek/synq-store/main/images/synq_store_cover.svg" />
 </p>
 
 **Sync Store** is a lightweight, hook-based state management library for JavaScript/TypeScript, with powerful, built-in features for **server data synchronization** and **optimistic updates**.

@@ -288,7 +288,7 @@ function UserComponent() {
 
 
 ### React/NextJs Integration
-Use [react-sync-state](https://www.npmjs.com/package/react-sync-state)
+Use [react-synq-store](https://www.npmjs.com/package/react-synq-store)
 
 
 ## Credit

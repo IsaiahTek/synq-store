@@ -36,27 +36,61 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Store = void 0;
 // -----------------------------
+/**
+ * A lightweight reactive state management class that provides
+ * basic CRUD operations and subscription mechanisms.
+ *
+ * Acts as the base class for `SynqStore`, allowing both local
+ * and server-synced data handling.
+ *
+ * @template StoreType - The type of data managed by this store.
+ */
 class Store {
+    /**
+     * Initializes a new store with an initial state and optional key for identification.
+     * Automatically registers the store with the global `Synq` instance.
+     *
+     * @param initial - The initial state value or list of items.
+     * @param key - Optional unique key for identifying items (defaults to `"id"`).
+     */
     constructor(initial, key) {
+        /**
+         * The property key used to uniquely identify each item in the store.
+         * Defaults to `"id"`.
+         */
         this.key = 'id';
+        /**
+         * A set of listeners that are notified whenever the store's state changes.
+         */
         this.listeners = new Set();
         this.state = initial;
         if (key) {
             this.key = key;
         }
+        // Defer store registration until the current event loop completes
         queueMicrotask(async () => {
-            // import("./synq").then(({ addStore }) => addStore(this));
             const { addStore } = await Promise.resolve().then(() => __importStar(require("./synq")));
             addStore(this);
         });
     }
+    /**
+     * Returns the current snapshot of the store's state.
+     * The snapshot is a direct reference to the internal state.
+     */
     get snapshot() {
         return this.state;
     }
+    /**
+     * Adds a new item to the store.
+     * Prevents duplicate entries if an item with the same key already exists.
+     *
+     * @param item - The item to add to the store.
+     */
     add(item) {
         if (Array.isArray(this.snapshot)) {
             const id = item[this.key];
-            const existingIndex = (Array.isArray(this.snapshot) ? this.snapshot : [this.snapshot]).findIndex((i) => i[this.key] === id);
+            const existingIndex = (Array.isArray(this.snapshot) ? this.snapshot : [this.snapshot])
+                .findIndex((i) => i[this.key] === id);
             if (existingIndex !== -1)
                 return;
             this.setState([...this.snapshot, item]);
@@ -65,9 +99,23 @@ class Store {
             this.setState(item);
         }
     }
+    /**
+     * Indicates whether the store currently holds an array of items.
+     *
+     * @returns `true` if the state is an array; otherwise, `false`.
+     */
     get isStoreArray() {
         return Array.isArray(this.state);
     }
+    /**
+     * Updates an existing item in the store.
+     * If the item doesn't exist, it will be added instead.
+     *
+     * Supports functional updates, allowing transformations based on current state.
+     *
+     * @param item - The new value or a function producing the new value.
+     * @param key - The unique identifier of the item to update.
+     */
     update(item, key) {
         if (this.isStoreArray) {
             const index = this._indexOf(key);
@@ -92,26 +140,54 @@ class Store {
             this.listeners.forEach((listener) => listener(this.state));
         }
     }
+    /**
+     * Removes an item from the store by its key.
+     *
+     * @param key - The unique identifier of the item to remove.
+     */
     remove(key) {
         if (this.isStoreArray) {
             const newState = this.snapshot.filter((snap) => snap[this.key] !== key);
             this.setState(newState);
         }
     }
+    /**
+     * Returns the index of an item in the store’s array by its unique ID.
+     *
+     * @param id - The unique identifier to search for.
+     * @returns The index of the matching item, or -1 if not found.
+     */
     _indexOf(id) {
-        return (Array.isArray(this.snapshot) ? this.snapshot : []).findIndex((i) => (i[this.key]) === id);
+        return (Array.isArray(this.snapshot) ? this.snapshot : []).findIndex((i) => i[this.key] === id);
     }
+    /**
+     * Finds an item in the store by its unique identifier.
+     *
+     * @param id - The identifier to match against the store’s key.
+     * @returns The found item, or `undefined` if not found.
+     */
     find(id) {
         if (this.isStoreArray) {
-            return this.snapshot.find((i) => (i[this.key]) === id);
+            return this.snapshot.find((i) => i[this.key] === id);
         }
     }
+    /**
+     * Finds an item in the store that matches a custom condition.
+     *
+     * @param predicate - A function that returns `true` for the desired item.
+     * @returns The first matching item, or `undefined` if none match.
+     */
     findBy(predicate) {
         if (this.isStoreArray) {
             return this.snapshot.find(predicate);
         }
     }
-    /** Replace state and notify subscribers */
+    /**
+     * Replaces the current state of the store and notifies all subscribers.
+     * Prevents redundant updates if the new state is identical to the current one.
+     *
+     * @param next - The new state to set.
+     */
     setState(next) {
         if (Object.is(this.state, next))
             return; // prevent redundant updates
@@ -120,107 +196,16 @@ class Store {
             listener(this.state);
         }
     }
+    /**
+     * Subscribes a listener function to state changes in the store.
+     *
+     * @param listener - The function to invoke whenever the state changes.
+     * @returns A cleanup function to remove the listener.
+     */
     subscribe(listener) {
         this.listeners.add(listener);
         return () => this.listeners.delete(listener);
     }
 }
 exports.Store = Store;
-// import { Listener } from "./types";
-// export class Store<StoreType> {
-//   private state: StoreType;
-//   private listeners = new Set<Listener<StoreType>>();
-//   public key: string = 'id';
-//   private batching = false;
-//   private dirty = false;
-//   constructor(initial: StoreType = [], key?: string) {
-//     this.state = [...initial];
-//     if (key) {
-//       this.key = key
-//     }
-//     queueMicrotask(async () => {
-//       const { addStore } = await import("./synq");
-//       addStore(this);
-//     });
-//   }
-//   /** Returns current immutable snapshot */
-//   get snapshot(): StoreType {
-//     // Return a shallow copy for safety, so external code can’t mutate internal state
-//     return [...this.state];
-//   }
-//   /** Add new item (immutable update) */
-//   add(item: StoreType): void {
-//     this.setState([...this.state, item]);
-//   }
-//   /** Update item by key (immutable update) */
-//   update(item: StoreType): void {
-//     const id = item[this.key];
-//     if (id === undefined) return;
-//     const index = this._indexOf(id);
-//     if (index === -1) return;
-//     const newState = [...this.state];
-//     newState[index] = item;
-//     this.setState(newState);
-//   }
-//   /** Remove item by key (immutable update) */
-//   remove(id: StoreType[keyof StoreType]): void {
-//     const newState = this.state.filter((i) => i[this.key] !== id);
-//     this.setState(newState);
-//   }
-//   /** Find item by key */
-//   find(id: StoreType[keyof StoreType]): StoreType | undefined {
-//     return this.state.find((i) => i[this.key] === id);
-//   }
-//   /** Find by custom predicate */
-//   findBy(predicate: (item: StoreType) => boolean): StoreType | undefined {
-//     return this.state.find(predicate);
-//   }
-//   /** Subscribe to state changes */
-//   subscribe(listener: Listener<StoreType>): () => void {
-//     this.listeners.add(listener);
-//     return () => this.listeners.delete(listener);
-//   }
-//   /** Begin a batch update (no re-render until commit) */
-//   beginBatch(): void {
-//     this.batching = true;
-//     this.dirty = false;
-//   }
-//   /** End batch update (triggers re-render once if needed) */
-//   endBatch(): void {
-//     this.batching = false;
-//     if (this.dirty) {
-//       this.notify();
-//       this.dirty = false;
-//     }
-//   }
-//   /** Perform batch operations with automatic handling */
-//   batch(fn: () => void): void {
-//     this.beginBatch();
-//     try {
-//       fn();
-//     } finally {
-//       this.endBatch();
-//     }
-//   }
-//   /** Replace state and notify subscribers */
-//   private setState(next: StoreType): void {
-//     if (Object.is(this.state, next)) return;
-//     this.state = next;
-//     if (this.batching) {
-//       this.dirty = true;
-//     } else {
-//       this.notify();
-//     }
-//   }
-//   /** Notify all listeners */
-//   private notify(): void {
-//     for (const listener of this.listeners) {
-//       listener(this.state);
-//     }
-//   }
-//   /** Utility: find index by id */
-//   private _indexOf(id: unknown): number {
-//     return this.state.findIndex((i) => i[this.key] === id);
-//   }
-// }
 //# sourceMappingURL=store.js.map

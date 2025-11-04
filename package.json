@@ -1,6 +1,6 @@
 {
   "name": "synq-store",
-  "version": "1.0.1",
+  "version": "1.2.0",
   "description": "A minimal reactive state management plugin for JavaScript/TypeScript",
   "main": "dist/index.js",
   "scripts": {

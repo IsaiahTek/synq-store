@@ -11,7 +11,6 @@ class SynqStore extends store_1.Store {
         this.status = "idle";
         this.options = options;
         if (typeof window !== "undefined") {
-            // auto-fetch only if developer opts in
             if (options.autoFetchOnStart) {
                 this.fetch();
             }
@@ -29,12 +28,16 @@ class SynqStore extends store_1.Store {
     get isSuccess() {
         return this.status === "success";
     }
+    // -------------------
+    // Fetch
+    // -------------------
     async fetch() {
         if (!this.options.fetcher)
             return;
         this.status = "loading";
-        const temp = Object.assign([], this.snapshot);
-        this.setState(temp);
+        const temp = this.snapshot ? structuredClone(this.snapshot) : null;
+        if (temp)
+            this.setState(temp);
         try {
             const data = await this.options.fetcher();
             this.setState(data);
@@ -43,17 +46,16 @@ class SynqStore extends store_1.Store {
         catch (err) {
             console.error("Fetch failed", err);
             this.status = "error";
-            const temp = Object.assign([], this.snapshot);
-            this.setState(temp);
+            if (temp)
+                this.setState(temp);
         }
     }
     // -------------------
     // Add (single item)
     // -------------------
     async add(item, xId) {
-        // assign temp ID if missing
-        const tempId = (this.options.idFactory?.() ??
-            "temp-" + Math.random().toString(36).slice(2, 9));
+        const tempId = this.options.idFactory?.() ??
+            "temp-" + Math.random().toString(36).slice(2, 9);
         const optimistic = { ...item, [this.key]: tempId };
         super.add(optimistic);
         if (!this.options.add)
@@ -66,20 +68,34 @@ class SynqStore extends store_1.Store {
         catch (err) {
             console.error("Add failed", err);
             super.remove(tempId);
-            // this.status = "error";
         }
     }
     // -------------------
     // Add Many
     // -------------------
     async addMany(items) {
-        const next = [...this.snapshot, ...items];
-        this.setState(next);
+        if (Array.isArray(this.snapshot)) {
+            this.setState([...this.snapshot, ...items]);
+        }
+        else if (this.snapshot === null) {
+            this.setState(items);
+        }
+        else {
+            this.setState([this.snapshot, ...items]);
+        }
         if (!this.options.addMany)
             return;
         try {
             const saved = await this.options.addMany(items);
-            this.setState([...this.snapshot, ...saved]);
+            if (Array.isArray(this.snapshot)) {
+                this.setState([...this.snapshot, ...saved]);
+            }
+            else if (this.snapshot === null) {
+                this.setState(saved);
+            }
+            else {
+                this.setState([this.snapshot, ...saved]);
+            }
             this.status = "success";
         }
         catch (err) {
@@ -91,12 +107,19 @@ class SynqStore extends store_1.Store {
     // Update
     // -------------------
     async update(item) {
-        super.update(item, item[this.key]);
+        const id = item[this.key];
+        super.update(item, id);
         if (!this.options.update)
             return;
         try {
             const saved = await this.options.update(item);
-            this.setState(this.snapshot.map((i) => (i === saved ? saved : i)));
+            if (Array.isArray(this.snapshot)) {
+                const next = this.snapshot.map((i) => i[this.key] === id ? saved : i);
+                this.setState(next);
+            }
+            else {
+                this.setState(saved);
+            }
             this.status = "success";
         }
         catch (err) {
@@ -108,9 +131,7 @@ class SynqStore extends store_1.Store {
     // Remove
     // -------------------
     async remove(id) {
-        // const next = this.snapshot.filter((i) => (i as Record<string, unknown>)[this.key] !== id);
-        // this.setState(next);
-        const backup = super.find(id);
+        const backup = this.find(id);
         super.remove(id);
         if (!this.options.remove)
             return;
@@ -123,31 +144,11 @@ class SynqStore extends store_1.Store {
             if (backup) {
                 super.add(backup);
             }
-            // this.status = "error";
         }
     }
-    // async sync(next: T[]) {
-    //     this.setState(next); // optimistic update
-    //     if (this.options.add) {
-    //         try {
-    //             const savedItems = await Promise.all(next.map(this.options.add));
-    //             this.setState(savedItems); // reconcile with server
-    //             this.status = "success";
-    //         } catch (err) {
-    //             console.error("Save failed", err);
-    //             this.status = "error";
-    //         }
-    //     } else if (this.options.addMany) {
-    //         try {
-    //             const saved = await this.options.addMany(next);
-    //             this.setState(saved); // reconcile with server
-    //             this.status = "success";
-    //         } catch (err) {
-    //             console.error("Save failed", err);
-    //             this.status = "error";
-    //         }
-    //     }
-    // }
+    // -------------------
+    // Dispose
+    // -------------------
     dispose() {
         if (this.timer)
             clearInterval(this.timer);

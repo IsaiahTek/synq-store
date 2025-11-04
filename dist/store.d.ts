@@ -1,17 +1,18 @@
 import { Listener } from "./types";
-export declare class Store<T> {
+export declare class Store<StoreType> {
     key: string;
     private state;
     private listeners;
-    constructor(initial: T[], key?: string);
-    get snapshot(): T[];
-    add(item: T): void;
-    update(item: T, key: string): void;
+    constructor(initial: StoreType | StoreType[] | null, key?: string);
+    get snapshot(): StoreType | StoreType[] | null;
+    add(item: StoreType): void;
+    private get isStoreArray();
+    update(item: StoreType | ((state: StoreType) => StoreType), key: string): void;
     remove(key: string): void;
     private _indexOf;
-    find(id: unknown): T | undefined;
-    findBy(predicate: (item: T) => boolean): T | undefined;
+    find(id: unknown): StoreType | undefined;
+    findBy(predicate: (item: StoreType) => boolean): StoreType | undefined;
     /** Replace state and notify subscribers */
-    setState(next: T[]): void;
-    subscribe(listener: Listener<T[]>): () => boolean;
+    setState(next: StoreType | StoreType[]): void;
+    subscribe(listener: Listener<StoreType | StoreType[]>): () => boolean;
 }

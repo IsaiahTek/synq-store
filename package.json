@@ -4,7 +4,8 @@
   "description": "A minimal reactive state management plugin for JavaScript/TypeScript",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest",
+    "test:watch": "vitest watch",
     "build": "tsc",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build"
@@ -33,6 +34,7 @@
   },
   "homepage": "https://github.com/IsaiahTek/synq-store#readme",
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.7"
   }
 }

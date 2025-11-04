@@ -54,34 +54,62 @@ class Store {
         return this.state;
     }
     add(item) {
-        const key = this.key;
-        const id = item[key];
-        const existingIndex = this.snapshot.findIndex((i) => i[key] === id);
-        if (existingIndex !== -1) {
-            // Replace the existing one
-            this.setState(this.snapshot.map((i) => (i[key] === id ? item : i)));
-        }
-        else {
-            // Add new
+        if (Array.isArray(this.snapshot)) {
+            const id = item[this.key];
+            const existingIndex = (Array.isArray(this.snapshot) ? this.snapshot : [this.snapshot]).findIndex((i) => i[this.key] === id);
+            if (existingIndex !== -1)
+                return;
             this.setState([...this.snapshot, item]);
         }
+        else {
+            this.setState(item);
+        }
+    }
+    get isStoreArray() {
+        return Array.isArray(this.state);
     }
     update(item, key) {
-        const newState = this.snapshot.map((snap) => snap[this.key] === key ? item : snap);
-        this.setState(newState);
+        if (this.isStoreArray) {
+            const index = this._indexOf(key);
+            const current = index !== -1 ? this.state[index] : undefined;
+            const next = typeof item === "function"
+                ? item(current)
+                : item;
+            const newState = [...this.state];
+            if (index !== -1)
+                newState[index] = next;
+            else
+                newState.push(next);
+            this.state = newState;
+        }
+        else {
+            const next = typeof item === "function"
+                ? item(this.state)
+                : item;
+            this.state = next;
+        }
+        if (this.state !== null) {
+            this.listeners.forEach((listener) => listener(this.state));
+        }
     }
     remove(key) {
-        const newState = this.snapshot.filter((snap) => snap[this.key] !== key);
-        this.setState(newState);
+        if (this.isStoreArray) {
+            const newState = this.snapshot.filter((snap) => snap[this.key] !== key);
+            this.setState(newState);
+        }
     }
     _indexOf(id) {
-        return this.state.findIndex((i) => (i[this.key]) === id);
+        return (Array.isArray(this.snapshot) ? this.snapshot : []).findIndex((i) => (i[this.key]) === id);
     }
     find(id) {
-        return this.state.find((i) => (i[this.key]) === id);
+        if (this.isStoreArray) {
+            return this.snapshot.find((i) => (i[this.key]) === id);
+        }
     }
     findBy(predicate) {
-        return this.state.find(predicate);
+        if (this.isStoreArray) {
+            return this.snapshot.find(predicate);
+        }
     }
     /** Replace state and notify subscribers */
     setState(next) {
@@ -99,13 +127,13 @@ class Store {
 }
 exports.Store = Store;
 // import { Listener } from "./types";
-// export class Store<T> {
-//   private state: T[];
-//   private listeners = new Set<Listener<T[]>>();
+// export class Store<StoreType> {
+//   private state: StoreType;
+//   private listeners = new Set<Listener<StoreType>>();
 //   public key: string = 'id';
 //   private batching = false;
 //   private dirty = false;
-//   constructor(initial: T[] = [], key?: string) {
+//   constructor(initial: StoreType = [], key?: string) {
 //     this.state = [...initial];
 //     if (key) {
 //       this.key = key
@@ -116,16 +144,16 @@ exports.Store = Store;
 //     });
 //   }
 //   /** Returns current immutable snapshot */
-//   get snapshot(): T[] {
+//   get snapshot(): StoreType {
 //     // Return a shallow copy for safety, so external code can’t mutate internal state
 //     return [...this.state];
 //   }
 //   /** Add new item (immutable update) */
-//   add(item: T): void {
+//   add(item: StoreType): void {
 //     this.setState([...this.state, item]);
 //   }
 //   /** Update item by key (immutable update) */
-//   update(item: T): void {
+//   update(item: StoreType): void {
 //     const id = item[this.key];
 //     if (id === undefined) return;
 //     const index = this._indexOf(id);
@@ -135,20 +163,20 @@ exports.Store = Store;
 //     this.setState(newState);
 //   }
 //   /** Remove item by key (immutable update) */
-//   remove(id: T[keyof T]): void {
+//   remove(id: StoreType[keyof StoreType]): void {
 //     const newState = this.state.filter((i) => i[this.key] !== id);
 //     this.setState(newState);
 //   }
 //   /** Find item by key */
-//   find(id: T[keyof T]): T | undefined {
+//   find(id: StoreType[keyof StoreType]): StoreType | undefined {
 //     return this.state.find((i) => i[this.key] === id);
 //   }
 //   /** Find by custom predicate */
-//   findBy(predicate: (item: T) => boolean): T | undefined {
+//   findBy(predicate: (item: StoreType) => boolean): StoreType | undefined {
 //     return this.state.find(predicate);
 //   }
 //   /** Subscribe to state changes */
-//   subscribe(listener: Listener<T[]>): () => void {
+//   subscribe(listener: Listener<StoreType>): () => void {
 //     this.listeners.add(listener);
 //     return () => this.listeners.delete(listener);
 //   }
@@ -175,7 +203,7 @@ exports.Store = Store;
 //     }
 //   }
 //   /** Replace state and notify subscribers */
-//   private setState(next: T[]): void {
+//   private setState(next: StoreType): void {
 //     if (Object.is(this.state, next)) return;
 //     this.state = next;
 //     if (this.batching) {

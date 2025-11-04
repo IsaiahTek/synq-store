@@ -4,7 +4,7 @@ export declare class SynqStore<T, B> extends Store<T> {
     status: SynqStoreStatus;
     private options;
     private timer?;
-    constructor(initial: T[], options: ServerOptions<T, B>, key?: string);
+    constructor(initial: T | T[] | null, options: ServerOptions<T, B>, key?: string);
     get isLoading(): boolean;
     get isError(): boolean;
     get isSuccess(): boolean;

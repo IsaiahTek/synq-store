@@ -1,4 +1,5 @@
 export type SynqStoreStatus = "idle" | "loading" | "error" | "success";
+export type StoreType = Record<string, any>;
 export type ServerOptions<T, B> = {
     fetcher?: () => Promise<T[]>;
     add?: (item: Partial<T>, extra?: Partial<B>) => Promise<T>;

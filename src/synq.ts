@@ -1,7 +1,7 @@
 import { SynqStore as ST } from "./synq_store";
 import { Store, SynqStore } from "./types";
 
-export class Synq {
+class Synq {
     /**
      * Holds all registered store instances managed by Synq.
      * Can contain both standard `Store` and `SynqStore` objects.

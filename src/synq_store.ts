@@ -36,7 +36,7 @@ export class SynqStore<T, B> extends Store<T> {
    * @param options - Configuration options defining server interaction methods.
    * @param key - Optional unique identifier key for items in the store.
    */
-  constructor(initial: T | T[] | null, options: ServerOptions<T, B>, key?: string) {
+  constructor(initial: T, options: ServerOptions<T, B>, key?: string) {
     super(initial, key);
     this.options = options;
 

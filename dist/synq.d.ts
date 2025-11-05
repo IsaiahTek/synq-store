@@ -53,6 +53,7 @@ export declare class Synq {
      */
     clearAllStores(): void;
 }
+
 /**
  * Convenience exports for commonly used Synq operations.
  *

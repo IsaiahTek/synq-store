@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.clearAllStores = exports.emptyStore = exports.addStore = void 0;
+exports.clearAllStores = exports.emptyStore = exports.addStore = exports.Synq = void 0;
 const synq_store_1 = require("./synq_store");
 class Synq {
     /**
@@ -71,6 +71,7 @@ class Synq {
         });
     }
 }
+exports.Synq = Synq;
 /**
  * Convenience exports for commonly used Synq operations.
  *

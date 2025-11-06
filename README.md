@@ -40,6 +40,7 @@ The `Store` is a lightweight global state container for managing local applicati
 
 ```typescript
 import { Store } from "synq-store";
+import { clearAllStores, emptyStore} from "synq-store/dist/synq";
 
 // Create a store with initial state
 const counterStore = new Store({ count: 0, user: null });
@@ -57,7 +58,8 @@ const currentState = counterStore.snapshot;
 console.log(currentState); // { count: 1, user: null }
 
 // Clean up
-unsubscribe();
+clearAllStores();         // For clearing all stores including this. Don't use this if you only want to clear this store
+emptyStore(counterStore)  // Use for clearing the state of this store only
 ```
 
 ### SynqStore (Server State Synchronization)

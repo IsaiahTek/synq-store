@@ -172,64 +172,6 @@ function App() {
 }
 ```
 
-### Error Handling with Optimistic Updates
-
-```tsx
-function TodoListWithErrorHandling() {
-  const { data: todos, add, update, remove } = useSynqStore(todosStore);
-
-  const handleAddTodo = async (title: string) => {
-    try {
-      await add({ title, completed: false });
-      // Success! Optimistic update was confirmed by server
-    } catch (error) {
-      // Automatic rollback already happened
-      // Show error notification to user
-      alert("Failed to add todo. Please try again.");
-    }
-  };
-
-  const handleUpdateTodo = async (id: string, updates: Partial<Todo>) => {
-    try {
-      await update(id, updates);
-    } catch (error) {
-      alert("Failed to update todo. Changes have been reverted.");
-    }
-  };
-
-  return <div>{/* Your component JSX */}</div>;
-}
-```
-
-### Manual Refetch and Cache Invalidation
-
-```tsx
-function DataManager() {
-  const { data, loading, refetch, reset } = useSynqStore(todosStore);
-
-  const handleForceRefresh = async () => {
-    // Manually trigger a refetch from server
-    await refetch();
-  };
-
-  const handleClearCache = () => {
-    // Reset to initial state
-    reset();
-  };
-
-  return (
-    <div>
-      <button onClick={handleForceRefresh} disabled={loading}>
-        {loading ? "Refreshing..." : "Refresh Data"}
-      </button>
-      <button onClick={handleClearCache}>Clear Cache</button>
-
-      <div>Items: {data.length}</div>
-    </div>
-  );
-}
-```
-
 ### TypeScript Support
 
 Synq-Store is fully typed for an excellent TypeScript experience:

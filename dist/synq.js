@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.clearAllStores = exports.emptyStore = exports.addStore = void 0;
 const synq_store_1 = require("./synq_store");
+// import { Store, SynqStore } from "./types";
 class Synq {
     /**
      * Private constructor to enforce the singleton pattern.
@@ -16,7 +17,6 @@ class Synq {
          *
          * @private
          */
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this._stores = [];
     }
     /**

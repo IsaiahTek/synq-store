@@ -7,6 +7,7 @@
 **Sync Store** is a lightweight, hook-based state management library for JavaScript/TypeScript, with powerful, built-in features for **server data synchronization** and **optimistic updates**.
 
 It provides two core store types:
+
 1.  **`Store`**: A minimal, fast, global state container.
 2.  **`SynqStore`**: An extended store for managing and synchronizing collections of server-side data (e.g., resources, lists) with automatic fetching, optimistic mutations, and background re-fetching.
 
@@ -14,11 +15,11 @@ It provides two core store types:
 
 ## 🚀 Features
 
-* **Server Synchronization:** The **`SynqStore`** handles data fetching, caching, and server mutations out of the box.
-* **Optimistic Updates:** Experience instant UI updates on `add`, `update`, and `remove` operations, with automatic rollback on failure.
-* **Interval Re-fetching:** Keep data fresh with automatic background fetching on a defined interval.
-* **Microtask Queuing:** Ensures store initialization happens efficiently without blocking the main thread.
-* **Framework Agnostic Core:** The core `Store` class can be used outside of any framework.
+- **Server Synchronization:** The **`SynqStore`** handles data fetching, caching, and server mutations out of the box.
+- **Optimistic Updates:** Experience instant UI updates on `add`, `update`, and `remove` operations, with automatic rollback on failure.
+- **Interval Re-fetching:** Keep data fresh with automatic background fetching on a defined interval.
+- **Microtask Queuing:** Ensures store initialization happens efficiently without blocking the main thread.
+- **Framework Agnostic Core:** The core `Store` class can be used outside of any framework.
 
 ---
 
@@ -38,21 +39,21 @@ yarn add synq-store
 The `Store` is a lightweight global state container for managing local application state.
 
 ```typescript
-import { Store } from 'synq-store';
+import { Store } from "synq-store";
 
 // Create a store with initial state
 const counterStore = new Store({ count: 0, user: null });
 
 // Subscribe to store changes
 const unsubscribe = counterStore.subscribe((state) => {
-  console.log('State updated:', state);
+  console.log("State updated:", state);
 });
 
 // Update the state
-counterStore.setState({ count: counterStore.getState().count + 1 });
+counterStore.setState({ count: counterStore.snapshot.count + 1 });
 
 // Get current state
-const currentState = counterStore.getState();
+const currentState = counterStore.snapshot;
 console.log(currentState); // { count: 1, user: null }
 
 // Clean up
@@ -74,24 +75,10 @@ interface Todo {
 }
 
 // Create a SynqStore with server sync configuration
-const todosStore = new SynqStore<Todo>({
-  // Initial state
-  initialState: [],
-  
-  // Unique key for each item
-  idKey: 'id',
-  
-  // Fetch function to load data from server
-  fetchFn: async () => {
-    const response = await fetch('https://api.example.com/todos');
-    return response.json();
-  },
-  
-  // Optional: Auto-refetch interval (in milliseconds)
-  refetchInterval: 30000, // Refetch every 30 seconds
-  
-  // Optional: Server mutation functions
-  mutations: {
+const todosStore = new SynqStore<Todo>({[],
+  {
+    fetcher: async() => await fetch('https://api/example.com/todos'),
+
     add: async (item: Omit<Todo, 'id'>) => {
       const response = await fetch('https://api.example.com/todos', {
         method: 'POST',
@@ -100,7 +87,7 @@ const todosStore = new SynqStore<Todo>({
       });
       return response.json();
     },
-    
+
     update: async (id: string, updates: Partial<Todo>) => {
       const response = await fetch(`https://api.example.com/todos/${id}`, {
         method: 'PATCH',
@@ -109,73 +96,75 @@ const todosStore = new SynqStore<Todo>({
       });
       return response.json();
     },
-    
+
     remove: async (id: string) => {
       await fetch(`https://api.example.com/todos/${id}`, {
         method: 'DELETE'
       });
       return id;
-    }
+    },
+    
+    interval: 3000,
+    autoFetchOnStart: false,
   }
 });
 ```
 
-
 ### Advanced: Combining Local and Server State
 
 ```tsx
-import { Store, SynqStore, useStore, useSynqStore } from 'synq-store';
+import { Store, SynqStore } from "synq-store";
 
 // Local UI state
 const uiStore = new Store({
   sidebarOpen: false,
-  theme: 'light',
-  selectedFilter: 'all'
+  theme: "light",
+  selectedFilter: "all",
 });
 
 // Server-synced data
 const postsStore = new SynqStore({
   initialState: [],
-  idKey: 'id',
+  idKey: "id",
   fetchFn: async () => {
-    const response = await fetch('https://api.example.com/posts');
+    const response = await fetch("https://api.example.com/posts");
     return response.json();
   },
-  refetchInterval: 60000
+  refetchInterval: 60000,
 });
 
 function App() {
   // Use both local and server state
-  const ui = useStore(uiStore);
-  const { data: posts, loading } = useSynqStore(postsStore);
+  const ui = useStore(uiStore); // use hooks only available in react wrapper.
+  const { data: posts, loading } = useServerSyncedStoreWithExtras(postsStore); // Only available in React wrapper. See below how to use with react/next
 
   // Filter posts based on local UI state
-  const filteredPosts = posts.filter(post => {
-    if (ui.selectedFilter === 'all') return true;
+  const filteredPosts = posts.filter((post) => {
+    if (ui.selectedFilter === "all") return true;
     return post.category === ui.selectedFilter;
   });
 
   return (
     <div className={ui.theme}>
-      <Sidebar 
+      <Sidebar
         open={ui.sidebarOpen}
-        onToggle={() => uiStore.setState({ 
-          sidebarOpen: !ui.sidebarOpen 
-        })}
+        onToggle={() =>
+          uiStore.setState({
+            sidebarOpen: !ui.sidebarOpen,
+          })
+        }
       />
-      
+
       <FilterBar
         value={ui.selectedFilter}
-        onChange={(filter) => uiStore.setState({ 
-          selectedFilter: filter 
-        })}
+        onChange={(filter) =>
+          uiStore.setState({
+            selectedFilter: filter,
+          })
+        }
       />
-      
-      {loading ? (
-        <Spinner />
-      ) : (
-        <PostList posts={filteredPosts} />
-      )}
+
+      {loading ? <Spinner /> : <PostList posts={filteredPosts} />}
     </div>
   );
 }
@@ -194,7 +183,7 @@ function TodoListWithErrorHandling() {
     } catch (error) {
       // Automatic rollback already happened
       // Show error notification to user
-      alert('Failed to add todo. Please try again.');
+      alert("Failed to add todo. Please try again.");
     }
   };
 
@@ -202,15 +191,11 @@ function TodoListWithErrorHandling() {
     try {
       await update(id, updates);
     } catch (error) {
-      alert('Failed to update todo. Changes have been reverted.');
+      alert("Failed to update todo. Changes have been reverted.");
     }
   };
 
-  return (
-    <div>
-      {/* Your component JSX */}
-    </div>
-  );
+  return <div>{/* Your component JSX */}</div>;
 }
 ```
 
@@ -233,12 +218,10 @@ function DataManager() {
   return (
     <div>
       <button onClick={handleForceRefresh} disabled={loading}>
-        {loading ? 'Refreshing...' : 'Refresh Data'}
+        {loading ? "Refreshing..." : "Refresh Data"}
       </button>
-      <button onClick={handleClearCache}>
-        Clear Cache
-      </button>
-      
+      <button onClick={handleClearCache}>Clear Cache</button>
+
       <div>Items: {data.length}</div>
     </div>
   );
@@ -254,49 +237,32 @@ interface User {
   id: number;
   name: string;
   email: string;
-  role: 'admin' | 'user';
+  role: "admin" | "user";
 }
 
 // Store is fully typed
 const userStore = new Store<User>({
   id: 0,
-  name: '',
-  email: '',
-  role: 'user'
+  name: "",
+  email: "",
+  role: "user",
 });
-
-// TypeScript knows the shape of state
-const user = userStore.getState(); // Type: User
-
-// SynqStore with typed items
-const usersStore = new SynqStore<User>({
-  initialState: [],
-  idKey: 'id',
-  fetchFn: async (): Promise<User[]> => {
-    const response = await fetch('/api/users');
-    return response.json();
-  }
-});
-
-// Hooks are fully typed
-function UserComponent() {
-  const { data } = useSynqStore(usersStore); // data is User[]
-  
-  return <div>{data[0]?.name}</div>;
-}
 ```
 
-
 ### React/NextJs Integration
+
 Use [react-synq-store](https://www.npmjs.com/package/react-synq-store)
 
-
 ## Credit
+
 Created by Engr., [Isaiah Pius](https://github.com/IsaiahTek)
+
 ### Follow Me
+
 [Linked](https://linkedin.com/in/isaiah-pius)
 
 [X (Twitter)](https://x.com/IsaiahCodes)
 
 ## Sponsorship
+
 Kindly [Donate](https://github.com/sponsors/IsaiahTek) to help me continue authoring and maintaining all my open source projects.

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { SynqStore } from '../src/synq_store';
 import { ServerOptions } from "../src/types";
+import { clearAllStores, emptyStore, addStore } from "../src/synq";
 
 
 // Mock helper to simulate async delay
@@ -27,14 +28,18 @@ describe("SynqStore", () => {
             addMany: vi.fn((items) =>
                 delay(items.map((i: Todo, idx: number) => ({ ...i, id: `server-${idx}` })))
             ),
+            interval: 3000,
             autoFetchOnStart: false,
         };
 
         store = new SynqStore<Todo, string>([], mockOptions, "id");
+        store.dispose();
     });
 
     afterEach(() => {
         store.dispose();
+        clearAllStores();
+        emptyStore(store);
         vi.clearAllMocks();
     });
 

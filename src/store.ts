@@ -38,7 +38,7 @@ export class Store<StoreType> {
    * @param initial - The initial state value or list of items.
    * @param key - Optional unique key for identifying items (defaults to `"id"`).
    */
-  constructor(initial: StoreType | StoreType[] | null, key?: string) {
+  constructor(initial: StoreType, key?: string) {
     this.state = initial;
     if (key) {
       this.key = key;

@@ -29,7 +29,7 @@ export declare class Store<StoreType> {
      * @param initial - The initial state value or list of items.
      * @param key - Optional unique key for identifying items (defaults to `"id"`).
      */
-    constructor(initial: StoreType | StoreType[] | null, key?: string);
+    constructor(initial: StoreType, key?: string);
     /**
      * Returns the current snapshot of the store's state.
      * The snapshot is a direct reference to the internal state.

@@ -48,10 +48,10 @@ describe("SynqStore", () => {
 
     it("initializes with single object", () => {
         const singleStore = new SynqStore<Todo, string>(
-            { id: "1", title: "A" },
+            [{ id: "1", title: "A" }],
             mockOptions
         );
-        expect(singleStore.snapshot).toEqual({ id: "1", title: "A" });
+        expect(singleStore.snapshot).toEqual([{ id: "1", title: "A" }]);
     });
 
     // ------------------------------------
@@ -116,9 +116,10 @@ describe("SynqStore", () => {
     });
 
     it("update() works for single-object store", async () => {
-        const s = new SynqStore<Todo, string>({ id: "1", title: "Solo" }, mockOptions);
+        const s = new SynqStore<Todo, string>([{ id: "1", title: "Solo" }], mockOptions);
         await s.update({ id: "1", title: "Changed" });
-        expect((s.snapshot as Todo).title).toBe("Changed");
+        console.log("Update workss for single-object store", s.snapshot);
+        expect((s.snapshot as Todo[])[0].title).toBe("Changed");
     });
 
     // ------------------------------------

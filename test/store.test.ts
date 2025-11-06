@@ -6,16 +6,16 @@ interface Item {
   name: string;
 }
 
-// const emptyItem: Item = {
-//   id: '',
-//   name: '',
-// }
+const emptyItem: Item = {
+  id: '',
+  name: '',
+}
 
 describe('Store<T>', () => {
   let store: Store<Item>;
 
   beforeEach(() => {
-    store = new Store<Item>(null, 'id');
+    store = new Store<Item>(emptyItem, 'id');
   });
 
   it('adds an item', () => {

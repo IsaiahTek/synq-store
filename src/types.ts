@@ -78,27 +78,27 @@ export type ServerOptions<T, B> = {
  * 
  * @template T - The type of data managed by the store.
  */
-export type Store<T> = {
-  /**
-   * A readonly snapshot of the current store state.
-   */
-  readonly snapshot: T;
+// export type Store<T> = {
+//   /**
+//    * A readonly snapshot of the current store state.
+//    */
+//   readonly snapshot: T;
 
-  /**
-   * Replaces the store’s current state with a new one.
-   * 
-   * @param next - The new state to set.
-   */
-  setState(next: T): void;
+//   /**
+//    * Replaces the store’s current state with a new one.
+//    * 
+//    * @param next - The new state to set.
+//    */
+//   setState(next: T): void;
 
-  /**
-   * Subscribes a listener function to state changes.
-   * 
-   * @param listener - A callback invoked whenever the state changes.
-   * @returns A cleanup function to unsubscribe the listener.
-   */
-  subscribe(listener: Listener<T>): () => void;
-};
+//   /**
+//    * Subscribes a listener function to state changes.
+//    * 
+//    * @param listener - A callback invoked whenever the state changes.
+//    * @returns A cleanup function to unsubscribe the listener.
+//    */
+//   subscribe(listener: Listener<T>): () => void;
+// };
 
 /**
  * Function signature for listeners that react to store state changes.
@@ -112,47 +112,47 @@ export type Listener<T> = (state: T) => void;
  * 
  * @template T - The entity type, which must include an `id` property.
  */
-export type SynqStore<T extends { id: string }> = Store<T[]> & {
-  /**
-   * The current status of the store (e.g., loading, idle, error, success).
-   */
-  status: SynqStoreStatus;
+// export type SynqStore<T extends { id: string }> = Store<T[]> & {
+//   /**
+//    * The current status of the store (e.g., loading, idle, error, success).
+//    */
+//   status: SynqStoreStatus;
 
-  /**
-   * Fetches the latest items from the server and updates the store state.
-   */
-  fetch(): Promise<void>;
+//   /**
+//    * Fetches the latest items from the server and updates the store state.
+//    */
+//   fetch(): Promise<void>;
 
-  /**
-   * Adds a new item to both the store and server.
-   * 
-   * @param item - The item to add (may be partial).
-   */
-  add(item: Partial<T>): Promise<void>;
+//   /**
+//    * Adds a new item to both the store and server.
+//    * 
+//    * @param item - The item to add (may be partial).
+//    */
+//   add(item: Partial<T>): Promise<void>;
 
-  /**
-   * Adds multiple items to both the store and server.
-   * 
-   * @param items - The list of items to add.
-   */
-  addMany(items: T[]): Promise<void>;
+//   /**
+//    * Adds multiple items to both the store and server.
+//    * 
+//    * @param items - The list of items to add.
+//    */
+//   addMany(items: T[]): Promise<void>;
 
-  /**
-   * Updates an existing item in both the store and server.
-   * 
-   * @param item - The item with updated fields.
-   */
-  update(item: T): Promise<void>;
+//   /**
+//    * Updates an existing item in both the store and server.
+//    * 
+//    * @param item - The item with updated fields.
+//    */
+//   update(item: T): Promise<void>;
 
-  /**
-   * Removes an item from both the store and server by ID.
-   * 
-   * @param id - The ID of the item to remove.
-   */
-  remove(id: string): Promise<void>;
+//   /**
+//    * Removes an item from both the store and server by ID.
+//    * 
+//    * @param id - The ID of the item to remove.
+//    */
+//   remove(id: string): Promise<void>;
 
-  /**
-   * Disposes of the store by cleaning up subscriptions and resources.
-   */
-  dispose(): void;
-};
+//   /**
+//    * Disposes of the store by cleaning up subscriptions and resources.
+//    */
+//   dispose(): void;
+// };

@@ -1,5 +1,6 @@
 import { SynqStore as ST } from "./synq_store";
-import { Store, SynqStore } from "./types";
+import { Store } from "./store";
+// import { Store, SynqStore } from "./types";
 
 class Synq {
     /**
@@ -8,8 +9,7 @@ class Synq {
      * 
      * @private
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private _stores: (SynqStore<any> | Store<any>)[] = []
+    private _stores: (ST<any, any> | Store<any>)[] = []
 
     /**
      * Private constructor to enforce the singleton pattern.
@@ -46,7 +46,7 @@ class Synq {
      * @template T - The store's data type.
      * @param store - The store instance to add (either `Store` or `SynqStore`).
      */
-    public addStore<T>(store: Store<T> | SynqStore<T & {id: string}>) {
+    public addStore<T>(store: Store<T> | ST<T & {id: string}, any>) {
         // if(store instanceof SynqStore)
         Synq.instance._stores.push(store);
     }
@@ -58,7 +58,7 @@ class Synq {
      * @template T - The store's data type.
      * @param store - The store instance to reset.
      */
-    public emptyStore<T>(store: SynqStore<T & {id: string}> | Store<T>) {
+    public emptyStore<T>(store: ST<T & {id: string}, any> | Store<T>) {
         const foundStore = Synq.instance._stores.find((s) => s === store);
         if(!foundStore) return;
         if(foundStore instanceof ST){

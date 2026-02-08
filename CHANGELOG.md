@@ -1,3 +1,6 @@
+# v1.4.1
+Minor update on `fetcher?: () => Promise<T | T[]>;` to either return a collection (`T[]`) of provided type or single (`T`) for `mode: single`.
+
 # v1.4.0
 
 ## Summary of Changes

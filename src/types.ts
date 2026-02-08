@@ -21,7 +21,7 @@ export type ServerOptions<T, B> = {
    * Optional async function to fetch the initial list of items from the server.
    * Should return an array of items of type `T`.
    */
-  fetcher?: () => Promise<T[]>;
+  fetcher?: () => Promise<T | T[]>;
 
   /**
    * Optional async function to add a new item to the server.

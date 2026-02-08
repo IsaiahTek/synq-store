@@ -121,7 +121,7 @@ describe("SynqStore", () => {
             return ({ ...item, id: "x1", title: "Updated" })
         }, "x1");
         const items = store.snapshot as Todo[];
-        const updated = items.find((i) => i.id === "x1");
+        const updated = store.findByKey("id", "x1");
         console.log("Updated item", updated, items);
         expect(updated?.title).toBe("Updated");
         expect(mockOptions.update).toHaveBeenCalled();

@@ -32,13 +32,13 @@ export type ServerOptions<T, B> = {
      * @param item - The item with updated fields.
      * @returns The updated item as returned from the server.
      */
-    update?: (item: Partial<T>) => Promise<T>;
+    update?: (item: Partial<T> | ((state: Partial<T>) => T), key?: string) => Promise<T>;
     /**
      * Optional async function to remove an item from the server by its ID.
      *
      * @param id - The unique identifier of the item to remove.
      */
-    remove?: (id: string) => Promise<void>;
+    remove?: (id: string | ((item: T) => boolean)) => Promise<void>;
     /**
      * Optional async function to add multiple items to the server at once.
      *

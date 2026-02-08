@@ -68,8 +68,8 @@ export class Store<T> {
       const list = this.state as T[];
       const index = list.findIndex((i: any) => i[this.key] === id);
       const current = index !== -1 ? list[index] : undefined;
-      
-      const next = typeof item === 'function' 
+
+      const next = typeof item === 'function'
         ? (item as any)(current)
         : { ...current, ...item };
 
@@ -120,6 +120,25 @@ export class Store<T> {
     }
     return undefined;
   }
+
+  findBy(predicate: (item: T) => boolean): T | undefined {
+    if (this.isCollection) {
+      return (this.state as T[]).find(predicate);
+    }
+
+    const item = this.state as T;
+    return predicate(item) ? item : undefined;
+  }
+
+  findByKey<K extends keyof T>(key: K, value: T[K]): T | undefined {
+    if (this.isCollection) {
+      return (this.state as T[]).find(item => item[key] === value);
+    }
+
+    const item = this.state as T;
+    return item[key] === value ? item : undefined;
+  }
+
 
   public setState(next: T | T[] | null): void {
     if (Object.is(this.state, next)) return;

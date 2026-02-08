@@ -153,6 +153,20 @@ class Store {
         }
         return undefined;
     }
+    findBy(predicate) {
+        if (this.isCollection) {
+            return this.state.find(predicate);
+        }
+        const item = this.state;
+        return predicate(item) ? item : undefined;
+    }
+    findByKey(key, value) {
+        if (this.isCollection) {
+            return this.state.find(item => item[key] === value);
+        }
+        const item = this.state;
+        return item[key] === value ? item : undefined;
+    }
     setState(next) {
         if (Object.is(this.state, next))
             return;

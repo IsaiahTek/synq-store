@@ -14,6 +14,8 @@ export declare class Store<T> {
     update(item: Partial<T> | ((state: T) => T), id?: string): void;
     remove(input: string | ((item: T) => boolean)): void;
     find(id: string): T | undefined;
+    findBy(predicate: (item: T) => boolean): T | undefined;
+    findByKey<K extends keyof T>(key: K, value: T[K]): T | undefined;
     setState(next: T | T[] | null): void;
     subscribe(listener: Listener<T | T[] | null>): () => boolean;
 }

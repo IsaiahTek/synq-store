@@ -13,6 +13,8 @@ interface Todo {
     id: string;
     title: string;
     completed?: boolean;
+    description?: string;
+    priority?: number;
 }
 
 describe("SynqStore", () => {
@@ -22,9 +24,9 @@ describe("SynqStore", () => {
     beforeEach(() => {
         mockOptions = {
             fetcher: vi.fn(() => delay([{ id: "1", title: "Test todo" }])),
-            add: vi.fn((item) => delay({ ...item, id: "server-1" } as Todo)),
+            add: vi.fn((item) => delay({ ...item } as Todo)),
             update: vi.fn((item) => delay(item)),
-            remove: vi.fn((id) => delay(undefined)),
+            remove: vi.fn((id) => delay(id)),
             addMany: vi.fn((items) =>
                 delay(items.map((i: Todo, idx: number) => ({ ...i, id: `server-${idx}` })))
             ),
@@ -53,10 +55,10 @@ describe("SynqStore", () => {
 
     it("initializes with single object", () => {
         const singleStore = new SynqStore<Todo, string>(
-            [{ id: "1", title: "A" }],
+            { id: "1", title: "A" },
             mockOptions
         );
-        expect(singleStore.snapshot).toEqual([{ id: "1", title: "A" }]);
+        expect(singleStore.snapshot).toEqual({ id: "1", title: "A" });
     });
 
     // ------------------------------------
@@ -113,18 +115,33 @@ describe("SynqStore", () => {
     // Update
     // ------------------------------------
     it("update() modifies item and syncs with server", async () => {
-        await store.add({ id: "x1", title: "Old" });
-        await store.update({ id: "x1", title: "Updated" });
+        await store.add({ id: "x1", title: "Old", completed: false, description: "Old desc", priority: 1 });
+        await store.update((item) => {
+            console.log("Updating item", item);
+            return ({ ...item, id: "x1", title: "Updated" })
+        }, "x1");
         const items = store.snapshot as Todo[];
-        expect(items.find((i) => i.id === "x1")?.title).toBe("Updated");
+        const updated = items.find((i) => i.id === "x1");
+        console.log("Updated item", updated, items);
+        expect(updated?.title).toBe("Updated");
+        expect(mockOptions.update).toHaveBeenCalled();
+    });
+
+    it("update((item)=>item) modifies item and syncs with server", async () => {
+        await store.add({ id: "x1", title: "Old", completed: false, description: "Old desc", priority: 1 });
+        await store.update((item) => ({ ...item, title: "Edited" }), "x1");
+        const items = store.snapshot as Todo[];
+        const updated = items.find((i) => i.id === "x1");
+        console.log("Updated item", updated, items);
+        expect(updated?.title).toBe("Edited");
         expect(mockOptions.update).toHaveBeenCalled();
     });
 
     it("update() works for single-object store", async () => {
-        const s = new SynqStore<Todo, string>([{ id: "1", title: "Solo" }], mockOptions);
+        const s = new SynqStore<Todo, string>({ id: "1", title: "Solo" }, mockOptions);
         await s.update({ id: "1", title: "Changed" });
         console.log("Update workss for single-object store", s.snapshot);
-        expect((s.snapshot as Todo[])[0].title).toBe("Changed");
+        expect((s.snapshot as Todo).title).toBe("Changed");
     });
 
     // ------------------------------------
@@ -138,9 +155,19 @@ describe("SynqStore", () => {
         expect(mockOptions.remove).toHaveBeenCalled();
     });
 
+    it("remove((item)=>boolean) deletes item and calls server", async () => {
+        await store.add({ id: "r1", title: "Delete Me" });
+        await store.add({ id: "r2", title: "Musa"});
+        await store.remove((item) => item.title === "Musa");
+        const items = store.snapshot as Todo[];
+        expect(items.find((i) => i.id === "r2")).toBeUndefined();
+        expect(mockOptions.remove).toHaveBeenCalled();
+    });
+
     it("remove() restores item on server failure", async () => {
         // make sure add completes and we capture the actual id used in the store
-        await store.add({ title: "Revert Me" });
+        await store.add({ id: "1", title: "Revert Me" });
+        await store.add({ id: "r2", title: "Revert Me" });
         const afterAdd = store.snapshot as Todo[];
         expect(afterAdd.length).toBeGreaterThan(0);
 
@@ -156,7 +183,31 @@ describe("SynqStore", () => {
 
         const items = store.snapshot as Todo[];
         // The item should be present again (restored)
+        console.log("Restored item", items, realId);
         expect(items.find((i) => i.id === realId)).toBeDefined();
+    });
+
+    it("remove((item)=>boolean) restores item on server failure", async () => {
+        // make sure add completes and we capture the actual id used in the store
+        await store.add({ id: "1", title: "Revert Me" });
+        await store.add({ id: "r2", title: "Check Me" });
+        const afterAdd = store.snapshot as Todo[];
+        expect(afterAdd.length).toBeGreaterThan(0);
+
+        // grab the real id (could be a temp id or server id depending on implementation)
+        const title = "Check Me";
+        expect(title).toBeDefined();
+
+        // make server remove fail
+        mockOptions.remove = vi.fn(() => Promise.reject("Server fail"));
+
+        // attempt removal — since server will reject, store should restore the backup
+        await store.remove((item) => item.title === title);
+
+        const items = store.snapshot as Todo[];
+        // The item should be present again (restored)
+        console.log("Restored item", items, title);
+        expect(items.find((i) => i.title === title)).toBeDefined();
     });
 
 

@@ -1,5 +1,8 @@
-# v1.5.0
+# v1.5.1
+Minor update.
+Added isIdle to SynqStore to reflect store fetching state before initial fetch call
 
+# v1.5.0
 ## Readded `find` `findBy` and added `findByKey` to Store which is by extension also available for use in SynqStore
 
 Usage:

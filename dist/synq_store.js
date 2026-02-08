@@ -20,6 +20,7 @@ class SynqStore extends store_1.Store {
     get isLoading() { return this.status === "loading"; }
     get isError() { return this.status === "error"; }
     get isSuccess() { return this.status === "success"; }
+    get isIdle() { return this.status === "idle"; }
     // -------------------
     // Fetch
     // -------------------

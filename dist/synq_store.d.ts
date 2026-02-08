@@ -12,6 +12,7 @@ export declare class SynqStore<T, B> extends Store<T> {
     get isLoading(): boolean;
     get isError(): boolean;
     get isSuccess(): boolean;
+    get isIdle(): boolean;
     fetch(): Promise<void>;
     add(item: Partial<T>, xId?: B): Promise<void>;
     addMany(items: T[]): Promise<void>;
